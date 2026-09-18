@@ -3,20 +3,22 @@
  * EJEMPLO 3 — VERSIÓN ASYNC/AWAIT (idiomática y funcional)
  * ============================================================
  * Versión recomendada: async/await para la legibilidad,
- * try/catch/finally para el manejo de errores, y COMPOSICIÓN DE
- * FUNCIONES (pipeAsync) para expresar el demo como una tubería de
- * pasos en vez de una lista plana de instrucciones.
+ * try/catch/finally para el manejo de errores, y una "receta" de
+ * PASOS PUROS encadenados a mano en `main()`.
  *
  * Cada paso es una función pura en su firma: recibe un estado y
- * devuelve un estado NUEVO (nunca muta el que recibe), lo que
- * permite leer `runDemo` como una receta declarativa de arriba a
- * abajo.
+ * devuelve un estado NUEVO (nunca muta el que recibe). Llamarlos
+ * directamente con `await`, uno detrás de otro, es preferible a
+ * envolverlos en una utilidad de composición genérica (pipeAsync):
+ * el flujo es igual de legible pero cada paso queda a un solo
+ * `await` de distancia de sus vecinos, sin indirección extra ni
+ * necesidad de saber cómo funciona el "pipe" por debajo.
  *
  * Ejecutar:  npm run example:async
  * ============================================================
  */
 import { connectDatabase, disconnectDatabase } from '../config/db.js';
-import { deleteAllOrganizations, seedOrganizations } from '../repositories/organization.repository.js';
+import { deleteAllOrganizations, seedOrganizations } from '../services/organization.service.js';
 import {
   aggregateUsersByOrganization,
   deleteAllUsers,
@@ -24,11 +26,10 @@ import {
   findUserSummaryByName,
   findUserWithOrganization,
   seedUsers
-} from '../repositories/user.repository.js';
+} from '../services/user.service.js';
 import { buildUsersSeed, organizationsSeed } from './seed-data.js';
-import { pipeAsync } from '../utils/functional.js';
 
-// Estado que fluye por la tubería. Es de solo lectura (readonly):
+// Estado que fluye por la receta. Es de solo lectura (readonly):
 // ningún paso puede mutarlo, solo puede devolver uno nuevo.
 interface DemoState {
   readonly organizationsCount: number;
@@ -75,16 +76,21 @@ const runAggregationDemo = async (state: DemoState): Promise<DemoState> => {
   return state;
 };
 
-// La "receta" completa, como composición de pasos.
-const runDemo = pipeAsync(cleanDatabase, seedDatabase, runCrudDemo, runPopulateDemo, runAggregationDemo);
-
 const main = async (): Promise<void> => {
   try {
     await connectDatabase();
     console.log('Conectado a MongoDB');
 
-    const finalState = await runDemo(initialState);
-    console.log(`\nResumen final: ${finalState.organizationsCount} organizaciones, ${finalState.usersCount} usuarios`);
+    // Cada paso se llama directamente con `await`, encadenando el
+    // estado a mano: mismo resultado que una composición genérica,
+    // pero sin esconder el orden de ejecución detrás de una utilidad.
+    let state = await cleanDatabase(initialState);
+    state = await seedDatabase(state);
+    state = await runCrudDemo(state);
+    state = await runPopulateDemo(state);
+    state = await runAggregationDemo(state);
+
+    console.log(`\nResumen final: ${state.organizationsCount} organizaciones, ${state.usersCount} usuarios`);
   } catch (error) {
     console.error('Error en el ejemplo:', error);
   } finally {

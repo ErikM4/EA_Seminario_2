@@ -12,7 +12,7 @@
  * ============================================================
  */
 import { connectDatabase, disconnectDatabase } from '../config/db.js';
-import { deleteAllOrganizations, seedOrganizations } from '../repositories/organization.repository.js';
+import { deleteAllOrganizations, seedOrganizations } from '../services/organization.service.js';
 import {
   aggregateUsersByOrganization,
   deleteAllUsers,
@@ -20,7 +20,7 @@ import {
   findUserSummaryByName,
   findUserWithOrganization,
   seedUsers
-} from '../repositories/user.repository.js';
+} from '../services/user.service.js';
 import { buildUsersSeed, organizationsSeed } from './seed-data.js';
 
 const main = async (): Promise<void> => {
