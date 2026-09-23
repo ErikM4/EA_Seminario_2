@@ -29,6 +29,6 @@ export const deleteAllProjects = async (): Promise<number> => {
   return deletedCount ?? 0;
 };
 
-// ListAll (usant lean() retorna els objectes primitius)
+// ListAll
 export const listAllProjects = async (): Promise<(Project & { _id: Types.ObjectId })[]> => 
   ProjectModel.find().lean();

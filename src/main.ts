@@ -12,20 +12,20 @@ import { findUserByName } from './services/user.service.js';
 const run = async () => {
   try {
     await connectDatabase();
-    console.log('Connectat a MongoDB'); 
+    console.log('Conectado a MongoDB'); 
     
     const creator1 = await findUserByName('Bill');
     const creator2 = await findUserByName('Peter');
     const creator3 = await findUserByName('Alice');
 
     if (!creator1) {
-      throw new Error("No s'ha trobat el creador Bill");
+      throw new Error("No se ha encontrado el creador Bill");
     }
     if (!creator2) {
-      throw new Error("No s'ha trobat el creador Peter");
+      throw new Error("No se ha encontrado el creador Peter");
     }
     if (!creator3) {
-      throw new Error("No s'ha trobat el creador Alice");
+      throw new Error("No se ha encontrado el creador Alice");
     }
 
 
@@ -50,7 +50,7 @@ const run = async () => {
       creator: creator3._id
     });
 
-    console.log('Projectes creats:', project1, project2, project3);
+    console.log('Proyectos creados:', project1, project2, project3);
 
     console.log('\n--- 2. GET BY ID ---');
     const ProjectByID = await getProjectById(project1._id);
@@ -79,7 +79,7 @@ const run = async () => {
     console.error('\n Error de Mongoose:', error);
   } finally {
     await disconnectDatabase();
-    console.log('\n Desconnectat de MongoDB');
+    console.log('\n Desconnecado de MongoDB');
   }
 };
 
